@@ -27,10 +27,8 @@ const IndividualMatch = () => {
                 const response = await fetch(`http://localhost:4000/matches/${id}`); // Use id in the API URL
                 const data = await response.json();
                 if (!data.success) {
-                    console.log(data)
                     alert(data.error);
                 } else {
-                    console.log(data);
                     setMatch(data.match);
                 }
             } catch (error) {
@@ -42,10 +40,16 @@ const IndividualMatch = () => {
 
     return (
         <div className="IndividualMatch">
-            <div>
-                <h1>Match</h1> 
-                <h3>Events:</h3>
-                <Event match={match} setMatch={setMatch}/>
+            <h1>Match</h1> 
+            <div className="MatchHeader">
+                <div className="eventDiv">
+                    <Event match={match} setMatch={setMatch}/>
+                </div>
+                <div className="MatchStats">
+                    <h2>Match Stats</h2>
+                    <p>Run: {match.runsScored}</p>
+                    <p>Balls: {match.balls}</p>
+                </div>
             </div>
             <div className="TeamListMatch">
                 <Team team={match.teamA} />

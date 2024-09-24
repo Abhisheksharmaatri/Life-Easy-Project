@@ -50,8 +50,19 @@ router.get('/', async (req: Request, res: Response) => {
 router.put('/:id', async (req: Request, res: Response) => {
   try {
     const updatedMatch = await Match.findByIdAndUpdate
-      (req.params.id, req.body, { new: true });
-    if (!updatedMatch) return res.status(404).json({message: 'Match not found' });
+      (req.params.id, req.body.match, { new: true })
+      .then(async (updatedMatch) => { 
+        if (!updatedMatch) return res.status(404).json({ message: 'Match not found' });
+        const updatedTeamA = await Team.findByIdAndUpdate(updatedMatch.teamA._id, req.body.match.teamA, { new: true });
+        const updatedTeamB = await Team.findByIdAndUpdate(updatedMatch.teamB, req.body.match.teamB, { new: true });
+        console.log(updatedTeamA, updatedTeamB);
+        return updatedMatch;
+      })
+      .catch((error) => {
+        res.status(404).json({ message: 'Match not found', error });
+      });
+
+    if (!updatedMatch) return res.status(404).json({ message: 'Match not found' });
     res.status(200).json({ success: true, match: updatedMatch });
   } catch (error) {
     res.status(500).json({ message: 'Error updating match', error });

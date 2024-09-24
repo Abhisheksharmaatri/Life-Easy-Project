@@ -1,6 +1,5 @@
 import Player from './Player';
 const Team = ({ team }) => { 
-    console.log(team);
     return (
         <div className='Team'>
             <h2>{team.name}</h2>

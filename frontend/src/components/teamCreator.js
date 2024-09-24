@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import TeamContent from './TeamContent';
 
+
 const TeamCreator = () => {
     const [teams, setTeams] = useState([]);
     const [teamName, setTeamName] = useState('');

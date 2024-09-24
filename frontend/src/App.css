@@ -38,18 +38,175 @@
   }
 }
 
-/* TeamCreator */
-.teamCreator {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-around;
-  color: black;
+/* General Reset for the nav */
+nav {
+  background-color: #f8f9fa;
+  /* Light grey background */
+  padding: 10px 20px;
+  border-radius: 8px;
+  /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  height: 30px;
+  /* Soft shadow */
 }
 
-.teamCreator input {
-  margin: 10px;
+nav ul {
+  list-style-type: none;
+  /* Remove default list style */
+  padding: 0;
+  margin: 0;
+  display: flex;
+  /* Horizontally align items */
+  justify-content: space-around;
+  align-items: center;
+  /* Spread the items equally */
 }
+
+nav li {
+  margin: 0 15px;
+  /* Space between list items */
+}
+
+nav a {
+  text-decoration: none;
+  /* Remove text underline */
+  color: #007bff;
+  /* Primary color for links */
+  font-weight: bold;
+  /* Bold text for better visibility */
+  font-size: 16px;
+  padding: 8px 15px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  /* Smooth transitions for hover effect */
+  border-radius: 5px;
+  /* Rounded link buttons */
+}
+
+nav a:hover {
+  background-color: #007bff;
+  /* Highlight on hover */
+  color: #fff;
+  /* White text on hover */
+}
+
+
+/* TeamCreator */
+/* Styling for the main container */
+.teamCreator {
+  display: flex;
+  justify-content: space-between;
+  /* Distributes child elements */
+  padding: 20px;
+  background-color: #f5f5f5;
+  /* Light grey background */
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  /* Subtle shadow */
+  margin: 20px 0;
+}
+
+/* Styling for each section */
+.teamCreatorList {
+  flex: 1;
+  margin-right: 20px;
+  /* Spacing between sections */
+}
+
+.TeamCreatorList {
+  flex: 1;
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Headings */
+.teamCreatorList h1,
+.teamCreatorList h2 {
+  color: #343a40;
+  /* Dark grey color */
+  margin-bottom: 10px;
+}
+
+.teamCreatorList h1 {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.teamCreatorList h2 {
+  font-size: 20px;
+  margin-top: 20px;
+}
+
+/* Input fields styling */
+.teamCreatorList input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  /* Subtle inner shadow */
+  font-size: 16px;
+}
+
+.teamCreatorList select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  font-size: 16px;
+  background-color: #fff;
+  color: #495057;
+}
+
+/* Button styling */
+.teamCreatorList button {
+  background-color: #28a745;
+  /* Green color for success */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.teamCreatorList button:hover {
+  background-color: #218838;
+  /* Darker green on hover */
+}
+
+/* Team list display */
+.TeamCreatorList p {
+  color: #6c757d;
+  /* Muted grey text */
+  font-size: 18px;
+}
+
+.TeamCreatorList .team {
+  margin: 10px 0;
+  padding: 15px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .teamCreator {
+    flex-direction: column;
+    /* Stack sections vertically */
+  }
+
+  .teamCreatorList {
+    margin-right: 0;
+    margin-bottom: 20px;
+  }
+}
+
 
 /* teamConent */
 
@@ -62,14 +219,6 @@
   justify-content: center;
   color: black;
   margin: 100px;
-}
-
-.TeamCreatorList {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-around;
-  color: black;
 }
 
 /* TeamList */
@@ -125,4 +274,48 @@
 .Player p,
 h4 {
   margin: 2px;
+}
+
+.IndividualMatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  color: black;
+}
+
+.MatchHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  color: black;
+}
+
+.MatchStats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  color: black;
+  margin-left: 100px;
+}
+
+.event {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  color: black;
+  max-width: 400px;
+  max-height: 400px;
+}
+
+.eventDiv {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  color: black;
+  margin: 10px;
 }

@@ -1,151 +1,251 @@
 import React, { useState } from "react";
 
 const Event = ({ match, setMatch }) => {
-    const [batsman, setBatsman] = useState({});
-    const [bowler, setBowler] = useState({});
-    const [nonStriker, setNonStriker] = useState({});
-    const [eventType, setEventType] = useState(""); // State for event type
-    const [runs, setRuns] = useState(0); // State for runs for the event
-    const [extras, setExtras] = useState({ wide: 0, noball: 0, legbye: 0, bye: 0, overthrow: 0 }); 
+  // State to store selected batsman, non-striker, and bowler
+    const [selectedBatsman, setSelectedBatsman] = useState({
+      name: "Select batsman",
+  });
+    const [selectedNonStriker, setSelectedNonStriker] = useState({
+      name: "Select non-striker",
+  });
+    const [selectedBowler, setSelectedBowler] = useState({
+        name: "Select bowler",
+    });
+    
+    const [events] = useState(["Wide + runs", "Noball + runs", "Noball + bye", "Noball + legbye", "Legbye/Bye + Overthrow", "Runs + OT (Overthrow)"]);
+    const [event, setEvent] = useState("None");
 
-    // Copy the passed match state to a local variable for modification
-    const localMatch = { ...match }; // FIX: define localMatch by copying from match prop
 
-    const updatePlayerStats = () => {
-        // Ensure that batsman and bowler stats exist before updating them
-        if (!localMatch.batsmanStats[batsman.name]) {
-            localMatch.batsmanStats[batsman.name] = { runs: 0, ballsFaced: 0 };
-        }
-        if (!localMatch.bowlerStats[bowler.name]) {
-            localMatch.bowlerStats[bowler.name] = { runsConceded: 0, wicketsTaken: 0 };
-        }
+  // Handles selecting a batsman
+  const handleBatsmanChange = (e) => {
+    setSelectedBatsman(e.target.value);
+    const selectedPlayer = match.teamA.players.find(player => player._id === e.target.value);
+    setSelectedBatsman({ ...selectedPlayer });
+  };
 
-        switch (eventType) {
-            case "Wide + runs":
-                localMatch.extras.wide += runs;
-                localMatch.teamB.stats.runsConceded += runs;
-                break;
-            case "Noball + bye":
-                localMatch.extras.noball += 1;
-                localMatch.extras.bye += (runs - 1);
-                localMatch.teamB.stats.runsConceded += runs;
-                localMatch.batsmanStats[batsman.name].ballsFaced += 1;
-                break;
-            case "Noball + runs":
-                localMatch.extras.noball += 1;
-                localMatch.batsmanStats[batsman.name].runs += (runs - 1);
-                localMatch.batsmanStats[batsman.name].ballsFaced += 1;
-                localMatch.teamB.stats.runsConceded += runs;
-                break;
-            case "Noball + legbye":
-                localMatch.extras.noball += 1;
-                localMatch.extras.legbye += (runs - 1);
-                localMatch.teamB.stats.runsConceded += runs;
-                localMatch.batsmanStats[batsman.name].ballsFaced += 1;
-                break;
-            case "Legbye/Bye + Overthrow":
-                localMatch.extras.legbye += runs;
-                localMatch.teamB.stats.runsConceded += runs;
-                break;
-            case "Runs + OT (Overthrow)":
-                localMatch.batsmanStats[batsman.name].runs += runs;
-                localMatch.teamB.stats.runsConceded += runs;
-                break;
-            default:
-                console.log("Invalid event type");
-        }
+  // Handles selecting a non-striker
+  const handleNonStrikerChange = (e) => {
+    setSelectedNonStriker(e.target.value);
+      const selectedPlayer = match.teamA.players.find(player => player._id === e.target.value)
+        setSelectedNonStriker({ ...selectedPlayer });
+  };
 
-        // Update the local match state with the updated stats
-        setMatch(localMatch);
-        console.log("Updated Local Match: ", localMatch);
+  // Handles selecting a bowler
+  const handleBowlerChange = (e) => {
+    setSelectedBowler(e.target.value);
+    const selectedPlayer = match.teamB.players.find(player => player._id === e.target.value);
+    setSelectedBowler({ ...selectedPlayer });
     };
 
-    const addEvent = () => {
-        if (!batsman.name || !bowler.name || !nonStriker.name) {
-            alert("Please select a batsman, bowler, and non-striker");
-            return;
-        }
-
-        // Update local player stats based on the event
-        updatePlayerStats();
-        alert("Event added locally!");
+    const handleEventChange = (e) => {
+        setEvent(e.target.value);
     };
-
-    const saveMatch = async () => {
-        if (!batsman || !bowler || !nonStriker) {
-            alert("Please select a batsman, bowler, and non-striker");
-            return;
-        }
-
-        try {
-            // Save the locally updated match to the backend
-            const response = await fetch(`http://localhost:4000/matches/${match._id}/event`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(localMatch), // Send the updated local match object
+    
+    const handleEvent = (event) => {
+        // Create a new match object to avoid direct mutation
+        const updatedMatch = { ...match };
+      
+        switch (event) {
+          case "Wide + runs":
+            updatedMatch.extras.wides += 1;
+            updatedMatch.runsScored += 1; // Add runs to the team's total score
+            updatedMatch.balls += 1; // Update balls faced if needed
+            updatedMatch.teamA.totalScore += 1; // Update the total score of the team
+            updatedMatch.teamA.players.map((player) => {
+              if (player._id === selectedBatsman._id) {
+                player.runs += 1; // Update the individual player's score
+                player.ballsFaced += 0; // No ball faced in case of a wide
+              }
+              return player;
             });
-            const data = await response.json();
-            if (!data.success) {
-                alert(data.error);
-            } else {
-                console.log("Match event saved successfully");
-            }
-        } catch (error) {
-            console.error("Error saving match event:", error);
+            updatedMatch.teamB.players.map((player) => {
+              if (player._id === selectedBowler._id) {
+                player.runs += 1; // Bowler concedes 1 run
+              }
+              return player;
+            });
+            break;
+      
+          case "Noball + runs":
+            updatedMatch.extras.noballs += 1;
+            updatedMatch.runsScored += 1; // Increment the score
+            updatedMatch.teamA.totalScore += 1;
+            updatedMatch.teamA.players.map((player) => {
+              if (player._id === selectedBatsman._id) {
+                player.runs += 1;
+                player.ballsFaced += 0; // No ball faced in case of no ball
+              }
+              return player;
+            });
+            updatedMatch.teamB.players.map((player) => {
+              if (player._id === selectedBowler._id) {
+                player.runs += 1; // Bowler concedes a run
+              }
+              return player;
+            });
+            break;
+      
+          case "Noball + bye":
+            updatedMatch.extras.noballs += 1;
+            updatedMatch.extras.byes += 1;
+            updatedMatch.runsScored += 1;
+            updatedMatch.teamA.totalScore += 1;
+            updatedMatch.teamB.players.map((player) => {
+              if (player._id === selectedBowler._id) {
+                player.runs += 1;
+              }
+              return player;
+            });
+            break;
+      
+          case "Noball + legbye":
+            updatedMatch.extras.noballs += 1;
+            updatedMatch.extras.legbyes += 1;
+            updatedMatch.runsScored += 1;
+            updatedMatch.teamA.totalScore += 1;
+            updatedMatch.teamB.players.map((player) => {
+              if (player._id === selectedBowler._id) {
+                player.runs += 1;
+              }
+              return player;
+            });
+            break;
+      
+          case "Legbye/Bye + Overthrow":
+            updatedMatch.extras.overthrows += 1;
+            updatedMatch.runsScored += 1;
+            updatedMatch.teamA.totalScore += 1;
+            updatedMatch.teamA.players.map((player) => {
+              if (player._id === selectedBatsman._id) {
+                player.runs += 1;
+              }
+              return player;
+            });
+            updatedMatch.teamB.players.map((player) => {
+              if (player._id === selectedBowler._id) {
+                player.runs += 1;
+              }
+              return player;
+            });
+            break;
+      
+          case "Runs + OT (Overthrow)":
+            updatedMatch.runsScored += 1; // Increment the team's runs
+            updatedMatch.extras.overthrows += 1;
+            updatedMatch.teamA.totalScore += 1;
+            updatedMatch.teamA.players.map((player) => {
+              if (player._id === selectedBatsman._id) {
+                player.runs += 1;
+              }
+              return player;
+            });
+            updatedMatch.teamB.players.map((player) => {
+              if (player._id === selectedBowler._id) {
+                player.runs += 1; // Bowler concedes an additional run due to overthrow
+              }
+              return player;
+            });
+            break;
+      
+          default:
+            console.log("No valid event selected");
         }
-    };
+      
+        // Update the local match state with the new match data
+        setMatch(updatedMatch);
+        console.log(updatedMatch);
+      };
+      
+      
 
-    return (
-        <div className="event">
-            <select name="batsman" id="batsman" onChange={(e) => setBatsman(JSON.parse(e.target.value))}>
-                <option value="">Select Batsman</option>
-                {match.teamA.players.map((player, index) => (
-                    <option value={JSON.stringify(player)} key={index}>{player.name}</option>
-                ))}
-            </select>
-            <select name="bowler" id="bowler" onChange={(e) => setBowler(JSON.parse(e.target.value))}>
-                <option value="">Select Bowler</option>
-                {match.teamB.players.map((player, index) => (
-                    <option value={JSON.stringify(player)} key={index}>{player.name}</option>
-                ))}
-            </select>
-            <select name="nonStriker" id="nonStriker" onChange={(e) => setNonStriker(JSON.parse(e.target.value))}>
-                <option value="">Select Non-Striker</option>
-                {match.teamA.players.map((player, index) => (
-                    <option value={JSON.stringify(player)} key={index}>{player.name}</option>
-                ))}
-            </select>
+  const saveMatch = async (match) => {
+    // Send a request to save the updated match
+    try {
+      const response = await fetch(`http://localhost:4000/matches/${match._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ match: match }),
+      });
 
-            {/* Select event type */}
-            <select name="eventType" id="eventType" onChange={(e) => setEventType(e.target.value)}>
-                <option value="">Select Event Type</option>
-                <option value="Wide + runs">Wide + runs</option>
-                <option value="Noball + bye">Noball + bye</option>
-                <option value="Noball + runs">Noball + runs</option>
-                <option value="Noball + legbye">Noball + legbye</option>
-                <option value="Legbye/Bye + Overthrow">Legbye/Bye + Overthrow</option>
-                <option value="Runs + OT (Overthrow)">Runs + OT (Overthrow)</option>
-            </select>
+      const data = await response.json();
+      if (!data.success) {
+        console.log(data.error);
+        alert("Failed to save match data");
+      } else {
+          console.log(data, "Match saved successfully");
+      }
+    } catch (error) {
+      console.error("Error saving match:", error);
+    }
+  };
 
-            {/* Input runs */}
-            <input
-                type="number"
-                name="runs"
-                id="runs"
-                value={runs}
-                onChange={(e) => setRuns(Number(e.target.value))}
-                placeholder="Enter Runs"
-            />
+  return (
+    <div className="Event">
+      <h3>Event Actions</h3>
 
-            {/* Add Event Button */}
-            <button onClick={addEvent}>Add Event</button>
+      {/* Select Batsman */}
+      <div className="eventDiv">
+        <label>Select On-Strike Batsman: </label>
+        <select value={selectedBatsman} onChange={handleBatsmanChange}>
+          <option value="">{selectedBatsman.name}</option>
+          {match.teamA.players.map((player) => (
+            <option key={player._id} value={player._id}>
+              {player.name} ({player.type})
+            </option>
+          ))}
+        </select>
+      </div>
 
-            {/* Save Match Button */}
-            <button onClick={saveMatch}>Save Match Event</button>
-        </div>
-    );
+      {/* Select Non-Striker */}
+      <div className="eventDiv">
+        <label>Select Non-Strike Batsman: </label>
+        <select value={selectedNonStriker} onChange={handleNonStrikerChange}>
+                  <option value="">{selectedNonStriker.name}</option>
+          {match.teamA.players.map((player) => (
+            <option key={player._id} value={player._id}>
+              {player.name} ({player.type})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Select Bowler */}
+      <div className="eventDiv">
+        <label>Select Bowler: </label>
+        <select value={selectedBowler} onChange={handleBowlerChange}>
+                  <option value="">{ selectedBowler.name}</option>
+          {match.teamB.players.map((player) => (
+            <option key={player._id} value={player._id}>
+              {player.name} ({player.type})
+            </option>
+          ))}
+        </select>
+          </div>
+          
+          {/* Select Event */}
+            <div className="eventDiv">
+                <label>Select Event: </label>
+                <select value={event} onChange={handleEventChange}>
+                    <option value="">Select Event</option>
+                    {events.map((event) => (
+                        <option key={event} value={event}>
+                            {event}
+                        </option>
+                    ))}
+              </select>
+              
+              <button onClick={() => handleEvent(event)}>Save Event</button>
+              
+            </div>
+
+      {/* Buttons to trigger various match events */}
+      <button onClick={() =>saveMatch(match)}>Save Match</button>
+
+      {/* Additional buttons for handling other events like Noball, Legbye, Overthrow can be added similarly */}
+    </div>
+  );
 };
 
 export default Event;
